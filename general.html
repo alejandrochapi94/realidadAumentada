@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Visor 3D + Realidad Aumentada</title>
+
+    <!-- MODEL VIEWER -->
+    <script
+        type="module"
+        src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.3.1/model-viewer.min.js">
+    </script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                linear-gradient(
+                    135deg,
+                    #07111f,
+                    #0d2038
+                );
+
+            color: white;
+
+            min-height: 100vh;
+        }
+
+
+        /* ==============================
+           ENCABEZADO
+        ============================== */
+
+        header {
+
+            text-align: center;
+
+            padding: 35px 20px 25px;
+
+        }
+
+        header h1 {
+
+            font-size: 2.2rem;
+
+            margin-bottom: 10px;
+
+        }
+
+        header p {
+
+            color: #b8c7d9;
+
+            max-width: 700px;
+
+            margin: auto;
+
+            line-height: 1.6;
+
+        }
+
+
+        /* ==============================
+           CONTENEDOR PRINCIPAL
+        ============================== */
+
+        .container {
+
+            width: 95%;
+
+            max-width: 1000px;
+
+            margin: auto;
+
+            padding-bottom: 50px;
+
+        }
+
+
+        /* ==============================
+           VISOR
+        ============================== */
+
+        .viewer-container {
+
+            background: rgba(255,255,255,0.07);
+
+            border: 1px solid rgba(255,255,255,0.15);
+
+            border-radius: 20px;
+
+            overflow: hidden;
+
+            backdrop-filter: blur(10px);
+
+            margin-bottom: 25px;
+
+        }
+
+
+        model-viewer {
+
+            width: 100%;
+
+            height: 550px;
+
+            background:
+
+                radial-gradient(
+                    circle,
+                    #24405b,
+                    #08131f
+                );
+
+        }
+
+
+        /* ==============================
+           BOTÓN AR
+        ============================== */
+
+        #ar-button {
+
+            position: absolute;
+
+            bottom: 20px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            border: none;
+
+            padding: 15px 25px;
+
+            border-radius: 30px;
+
+            background: #00d4ff;
+
+            color: #00131c;
+
+            font-weight: bold;
+
+            font-size: 16px;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 5px 20px rgba(0,212,255,0.4);
+
+        }
+
+
+        #ar-button:hover {
+
+            background: #68e8ff;
+
+        }
+
+
+        /* ==============================
+           MENSAJE AR
+        ============================== */
+
+        .ar-message {
+
+            position: absolute;
+
+            top: 20px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            background: rgba(0,0,0,0.7);
+
+            padding: 10px 18px;
+
+            border-radius: 10px;
+
+            font-size: 14px;
+
+            display: none;
+
+        }
+
+
+        model-viewer[ar-status="session-started"]
+        .ar-message {
+
+            display: block;
+
+        }
+
+
+        /* ==============================
+           PANEL
+        ============================== */
+
+        .panel {
+
+            background: rgba(255,255,255,0.07);
+
+            border: 1px solid rgba(255,255,255,0.15);
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            backdrop-filter: blur(10px);
+
+        }
+
+
+        .panel h2 {
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .control {
+
+            margin-bottom: 22px;
+
+        }
+
+
+        .control label {
+
+            display: block;
+
+            margin-bottom: 8px;
+
+            color: #d6e2ef;
+
+        }
+
+
+        input[type="text"] {
+
+            width: 100%;
+
+            padding: 14px;
+
+            border-radius: 10px;
+
+            border: 1px solid #3e5266;
+
+            background: #08131f;
+
+            color: white;
+
+            font-size: 15px;
+
+        }
+
+
+        input[type="file"] {
+
+            width: 100%;
+
+            padding: 14px;
+
+            border-radius: 10px;
+
+            border: 1px dashed #4d718e;
+
+            background: #08131f;
+
+            color: white;
+
+        }
+
+
+        /* ==============================
+           BOTONES
+        ============================== */
+
+        .buttons {
+
+            display: flex;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+
+        }
+
+
+        button.normal {
+
+            padding: 12px 20px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #1677ff;
+
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 15px;
+
+        }
+
+
+        button.normal:hover {
+
+            background: #4090ff;
+
+        }
+
+
+        /* ==============================
+           ESTADO
+        ============================== */
+
+        #status {
+
+            margin-top: 20px;
+
+            padding: 12px;
+
+            background: rgba(0,0,0,0.25);
+
+            border-radius: 10px;
+
+            color: #bdeeff;
+
+        }
+
+
+        /* ==============================
+           AYUDA
+        ============================== */
+
+        .help {
+
+            margin-top: 25px;
+
+            line-height: 1.7;
+
+            color: #c9d5e0;
+
+        }
+
+
+        .help strong {
+
+            color: white;
+
+        }
+
+
+        /* ==============================
+           RESPONSIVE
+        ============================== */
+
+        @media(max-width:700px) {
+
+            header h1 {
+
+                font-size: 1.7rem;
+
+            }
+
+            model-viewer {
+
+                height: 450px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>📱 Visor 3D + Realidad Aumentada</h1>
+
+    <p>
+        Visualiza modelos 3D, gíralos, haz zoom
+        y colócalos en el mundo real utilizando
+        la cámara de tu celular.
+    </p>
+
+</header>
+
+
+<div class="container">
+
+
+    <!-- =================================
+         VISOR 3D
+    ================================== -->
+
+    <div class="viewer-container">
+
+
+        <model-viewer
+
+            id="visor3D"
+
+            src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+
+            alt="Modelo tridimensional"
+
+            camera-controls
+
+            auto-rotate
+
+            shadow-intensity="1"
+
+            ar
+
+            ar-modes="webxr scene-viewer quick-look"
+
+            ar-scale="auto"
+
+            ar-placement="floor"
+
+            touch-action="pan-y"
+
+            xr-environment>
+
+
+            <!-- BOTÓN PERSONALIZADO AR -->
+
+            <button
+                slot="ar-button"
+                id="ar-button">
+
+                📱 Ver en mi espacio
+
+            </button>
+
+
+            <!-- MENSAJE CUANDO INICIA AR -->
+
+            <div class="ar-message">
+
+                📷 Mueve lentamente el teléfono
+                para detectar una superficie.
+
+            </div>
+
+
+        </model-viewer>
+
+
+    </div>
+
+
+
+    <!-- =================================
+         CONTROLES
+    ================================== -->
+
+    <div class="panel">
+
+
+        <h2>⚙️ Cambiar modelo 3D</h2>
+
+
+        <!-- URL -->
+
+        <div class="control">
+
+            <label for="modelURL">
+
+                URL de un modelo .GLB o .GLTF
+
+            </label>
+
+
+            <input
+
+                type="text"
+
+                id="modelURL"
+
+                placeholder="https://misitio.com/modelos/robot.glb"
+
+            >
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button
+                class="normal"
+                id="loadURL">
+
+                Cargar desde URL
+
+            </button>
+
+
+            <button
+                class="normal"
+                id="resetModel">
+
+                Modelo de prueba
+
+            </button>
+
+        </div>
+
+
+
+        <!-- ARCHIVO LOCAL -->
+
+        <div class="control"
+             style="margin-top:30px;">
+
+            <label for="modelFile">
+
+                O selecciona un archivo .GLB
+                desde tu dispositivo
+
+            </label>
+
+
+            <input
+
+                type="file"
+
+                id="modelFile"
+
+                accept=".glb,.gltf"
+
+            >
+
+        </div>
+
+
+
+        <!-- ESTADO -->
+
+        <div id="status">
+
+            Modelo actual:
+            Astronaut.glb
+
+        </div>
+
+
+
+        <!-- AYUDA -->
+
+        <div class="help">
+
+            <strong>Controles:</strong>
+
+            <br>
+
+            🖱️ Arrastra con el mouse o dedo
+            para girar el objeto.
+
+            <br>
+
+            🔍 Usa la rueda del mouse o dos dedos
+            para acercar y alejar.
+
+            <br>
+
+            📱 En un celular compatible aparecerá
+            el botón <b>Ver en mi espacio</b>.
+
+            <br>
+
+            📦 Para tus propios proyectos es
+            recomendable trabajar principalmente
+            con archivos <b>.GLB</b>.
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+    /* ======================================
+       ELEMENTOS
+    ====================================== */
+
+    const visor =
+        document.getElementById("visor3D");
+
+    const inputURL =
+        document.getElementById("modelURL");
+
+    const botonURL =
+        document.getElementById("loadURL");
+
+    const botonReset =
+        document.getElementById("resetModel");
+
+    const archivo =
+        document.getElementById("modelFile");
+
+    const estado =
+        document.getElementById("status");
+
+
+
+    /* ======================================
+       MODELO ORIGINAL
+    ====================================== */
+
+    const modeloPrueba =
+        "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
+
+
+
+    /* ======================================
+       CARGAR MODELO DESDE URL
+    ====================================== */
+
+    botonURL.addEventListener(
+        "click",
+        () => {
+
+            const url =
+                inputURL.value.trim();
+
+
+            if(url === "") {
+
+                estado.innerHTML =
+                    "⚠️ Ingresa primero una URL.";
+
+                return;
+
+            }
+
+
+            visor.src = url;
+
+
+            estado.innerHTML =
+                "⏳ Cargando modelo desde URL...";
+
+        }
+    );
+
+
+
+    /* ======================================
+       CARGAR ARCHIVO DEL DISPOSITIVO
+    ====================================== */
+
+    archivo.addEventListener(
+        "change",
+        function(event) {
+
+            const file =
+                event.target.files[0];
+
+
+            if(!file) {
+
+                return;
+
+            }
+
+
+            const extension =
+                file.name
+                .split(".")
+                .pop()
+                .toLowerCase();
+
+
+            if(
+                extension !== "glb" &&
+                extension !== "gltf"
+            ) {
+
+                estado.innerHTML =
+                    "❌ El archivo debe ser GLB o GLTF.";
+
+                return;
+
+            }
+
+
+            const objectURL =
+                URL.createObjectURL(file);
+
+
+            visor.src =
+                objectURL;
+
+
+            estado.innerHTML =
+                "📦 Archivo seleccionado: "
+                + file.name;
+
+        }
+    );
+
+
+
+    /* ======================================
+       RESTAURAR MODELO
+    ====================================== */
+
+    botonReset.addEventListener(
+        "click",
+        () => {
+
+            visor.src =
+                modeloPrueba;
+
+
+            inputURL.value =
+                "";
+
+
+            archivo.value =
+                "";
+
+
+            estado.innerHTML =
+                "Modelo actual: Astronaut.glb";
+
+        }
+    );
+
+
+
+    /* ======================================
+       MODELO CARGADO CORRECTAMENTE
+    ====================================== */
+
+    visor.addEventListener(
+        "load",
+        () => {
+
+            estado.innerHTML =
+                "✅ Modelo 3D cargado correctamente.";
+
+        }
+    );
+
+
+
+    /* ======================================
+       ERROR
+    ====================================== */
+
+    visor.addEventListener(
+        "error",
+        (event) => {
+
+            console.error(event);
+
+            estado.innerHTML =
+                "❌ No se pudo cargar el modelo.";
+
+        }
+    );
+
+
+
+    /* ======================================
+       ESTADO DE REALIDAD AUMENTADA
+    ====================================== */
+
+    visor.addEventListener(
+        "ar-status",
+        (event) => {
+
+            console.log(
+                "Estado AR:",
+                event.detail.status
+            );
+
+
+            if(
+                event.detail.status === "failed"
+            ) {
+
+                alert(
+                    "No fue posible iniciar la realidad aumentada en este dispositivo."
+                );
+
+            }
+
+        }
+    );
+
+
+</script>
+
+
+</body>
+</html>
