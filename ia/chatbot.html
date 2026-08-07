@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>El Puente de las Áreas</title>
+
+    <style>
+      :root {
+        --rosa: #ff2f87;
+        --rosa-claro: #ff75ae;
+        --verde: #18d6a0;
+        --verde-oscuro: #087b62;
+        --negro: #07070a;
+        --negro-suave: #111118;
+        --gris: #252530;
+        --blanco: #f7f7fb;
+        --amarillo: #ffd54a;
+        --rojo: #ff4d5d;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        overflow-x: hidden;
+        color: var(--blanco);
+        font-family: 'Trebuchet MS', Arial, sans-serif;
+        background: radial-gradient(
+          circle at top,
+          #242438 0%,
+          #0c0c13 44%,
+          #050507 100%
+        );
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      /* =========================
+           FONDO ANIMADO
+        ========================== */
+
+      .background-grid {
+        position: fixed;
+        inset: 0;
+        z-index: -4;
+        opacity: 0.22;
+        pointer-events: none;
+
+        background-image: linear-gradient(
+            rgba(255, 47, 135, 0.15) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(24, 214, 160, 0.12) 1px, transparent 1px);
+
+        background-size: 55px 55px;
+        animation: moverCuadricula 18s linear infinite;
+      }
+
+      @keyframes moverCuadricula {
+        from {
+          background-position: 0 0;
+        }
+
+        to {
+          background-position: 55px 55px;
+        }
+      }
+
+      .glow {
+        position: fixed;
+        z-index: -3;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        filter: blur(95px);
+        opacity: 0.2;
+        pointer-events: none;
+      }
+
+      .glow-one {
+        top: -170px;
+        left: -120px;
+        background: var(--rosa);
+        animation: flotarGlow 9s ease-in-out infinite alternate;
+      }
+
+      .glow-two {
+        right: -140px;
+        bottom: -160px;
+        background: var(--verde);
+        animation: flotarGlow 12s ease-in-out infinite alternate-reverse;
+      }
+
+      @keyframes flotarGlow {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+
+        to {
+          transform: translate(70px, 55px) scale(1.16);
+        }
+      }
+
+      .floating-symbol {
+        position: fixed;
+        z-index: -2;
+        opacity: 0.12;
+        pointer-events: none;
+        animation: flotarSimbolo 8s ease-in-out infinite;
+      }
+
+      .floating-circle {
+        top: 15%;
+        left: 4%;
+        width: 95px;
+        height: 95px;
+        border: 8px solid var(--rosa);
+        border-radius: 50%;
+      }
+
+      .floating-triangle {
+        top: 43%;
+        right: 5%;
+        width: 0;
+        height: 0;
+        border-left: 54px solid transparent;
+        border-right: 54px solid transparent;
+        border-bottom: 95px solid var(--verde);
+        animation-delay: -3s;
+      }
+
+      .floating-square {
+        left: 7%;
+        bottom: 8%;
+        width: 78px;
+        height: 78px;
+        border: 8px solid var(--rosa);
+        transform: rotate(15deg);
+        animation-delay: -5s;
+      }
+
+      @keyframes flotarSimbolo {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+
+        50% {
+          transform: translateY(-28px) rotate(10deg);
+        }
+      }
+
+      /* =========================
+           ENCABEZADO
+        ========================== */
+
+      .hero {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 86vh;
+        padding: 80px 20px 55px;
+        text-align: center;
+        overflow: hidden;
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        width: min(1050px, 100%);
+      }
+
+      .round-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 22px;
+        padding: 9px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 999px;
+        color: #e7fff7;
+        background: rgba(17, 17, 24, 0.75);
+        box-shadow: 0 0 25px rgba(24, 214, 160, 0.15);
+        backdrop-filter: blur(10px);
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        font-weight: bold;
+      }
+
+      .status-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--verde);
+        box-shadow: 0 0 12px var(--verde);
+        animation: latido 1.3s infinite;
+      }
+
+      @keyframes latido {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+
+        50% {
+          transform: scale(1.7);
+          opacity: 0.45;
+        }
+      }
+
+      h1 {
+        margin-bottom: 18px;
+        font-size: clamp(3.2rem, 9vw, 7.8rem);
+        line-height: 0.88;
+        text-transform: uppercase;
+        letter-spacing: -4px;
+        text-shadow: 0 0 25px rgba(255, 47, 135, 0.2),
+          0 8px 40px rgba(0, 0, 0, 0.65);
+      }
+
+      h1 .title-white {
+        display: block;
+        color: var(--blanco);
+      }
+
+      h1 .title-pink {
+        display: block;
+        color: var(--rosa);
+      }
+
+      .hero-description {
+        width: min(760px, 100%);
+        margin: 0 auto 31px;
+        color: #d3d3df;
+        font-size: clamp(1rem, 2vw, 1.25rem);
+        line-height: 1.7;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .primary-button,
+      .secondary-button {
+        min-width: 190px;
+        padding: 15px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: bold;
+        transition: transform 0.25s ease, box-shadow 0.25s ease,
+          border-color 0.25s ease;
+      }
+
+      .primary-button {
+        border: 1px solid var(--rosa);
+        color: white;
+        background: linear-gradient(135deg, var(--rosa), #bb1558);
+        box-shadow: 0 12px 35px rgba(255, 47, 135, 0.27);
+      }
+
+      .secondary-button {
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        color: white;
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(8px);
+      }
+
+      .primary-button:hover,
+      .secondary-button:hover {
+        transform: translateY(-4px);
+      }
+
+      .primary-button:hover {
+        box-shadow: 0 18px 40px rgba(255, 47, 135, 0.42);
+      }
+
+      .secondary-button:hover {
+        border-color: var(--verde);
+      }
+
+      .symbols-line {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 25px;
+        margin-top: 42px;
+      }
+
+      .symbol {
+        display: grid;
+        place-items: center;
+        width: 50px;
+        height: 50px;
+        transition: transform 0.3s ease;
+      }
+
+      .symbol:hover {
+        transform: rotate(12deg) scale(1.12);
+      }
+
+      .circle-symbol {
+        border: 5px solid var(--rosa);
+        border-radius: 50%;
+      }
+
+      .square-symbol {
+        border: 5px solid var(--rosa);
+      }
+
+      .triangle-symbol {
+        width: 0;
+        height: 0;
+        border-left: 29px solid transparent;
+        border-right: 29px solid transparent;
+        border-bottom: 50px solid var(--rosa);
+      }
+
+      /* =========================
+           CONTENIDO GENERAL
+        ========================== */
+
+      main {
+        width: min(1240px, calc(100% - 30px));
+        margin: auto;
+        padding-bottom: 100px;
+      }
+
+      .section {
+        margin-top: 46px;
+        padding: clamp(25px, 5vw, 55px);
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 24px;
+        background: linear-gradient(
+          145deg,
+          rgba(25, 25, 35, 0.95),
+          rgba(8, 8, 12, 0.94)
+        );
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35),
+          inset 0 1px rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 17px;
+        margin-bottom: 30px;
+      }
+
+      .section-number {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        color: var(--negro);
+        background: var(--verde);
+        box-shadow: 0 0 24px rgba(24, 214, 160, 0.24);
+        font-weight: 900;
+      }
+
+      .section-heading h2 {
+        font-size: clamp(1.65rem, 4vw, 2.7rem);
+        text-transform: uppercase;
+        letter-spacing: -1px;
+      }
+
+      .section-heading p {
+        margin-top: 6px;
+        color: #a9a9b9;
+        line-height: 1.5;
+      }
+
+      /* =========================
+           REGLAS
+        ========================== */
+
+      .rules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 18px;
+      }
+
+      .rule-card {
+        position: relative;
+        min-height: 215px;
+        padding: 25px 22px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 17px;
+        background: rgba(255, 255, 255, 0.035);
+        transition: transform 0.3s ease, border-color 0.3s ease,
+          background 0.3s ease;
+      }
+
+      .rule-card::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: rgba(255, 47, 135, 0.08);
+      }
+
+      .rule-card:hover {
+        transform: translateY(-7px);
+        border-color: rgba(255, 47, 135, 0.55);
+        background: rgba(255, 255, 255, 0.055);
+      }
+
+      .rule-icon {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 19px;
+        border-radius: 13px;
+        color: white;
+        background: linear-gradient(135deg, var(--rosa), #a9124c);
+        font-size: 1.4rem;
+        font-weight: bold;
+      }
+
+      .rule-card h3 {
+        margin-bottom: 11px;
+        font-size: 1.08rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .rule-card p {
+        color: #bdbdca;
+        line-height: 1.65;
+      }
+
+      .mission-box {
+        margin-top: 24px;
+        padding: 19px 21px;
+        border-left: 5px solid var(--amarillo);
+        border-radius: 10px;
+        color: #fff7cd;
+        background: rgba(255, 213, 74, 0.08);
+        line-height: 1.65;
+      }
+
+      /* =========================
+           GEOGEBRA
+        ========================== */
+
+      .game-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 275px;
+        gap: 22px;
+        align-items: start;
+      }
+
+      .geogebra-container {
+        position: relative;
+        width: 100%;
+        min-height: 540px;
+        padding: 12px;
+        overflow: hidden;
+        border: 2px solid rgba(255, 47, 135, 0.58);
+        border-radius: 18px;
+        background: #0b0b10;
+        box-shadow: 0 0 35px rgba(255, 47, 135, 0.16),
+          inset 0 0 30px rgba(0, 0, 0, 0.7);
+      }
+
+      .geogebra-container::before {
+        content: 'ÁREA DE JUEGO';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        z-index: 3;
+        padding: 6px 17px;
+        border-radius: 0 0 10px 10px;
+        color: white;
+        background: var(--rosa);
+        transform: translateX(-50%);
+        letter-spacing: 1.3px;
+        font-size: 0.72rem;
+        font-weight: bold;
+      }
+
+      .geogebra-container iframe {
+        display: block;
+        width: 100%;
+        min-height: 510px;
+        border: 0;
+        border-radius: 10px;
+        background: white;
+      }
+
+      .challenge-panel {
+        padding: 24px 19px;
+        border: 1px solid rgba(24, 214, 160, 0.35);
+        border-radius: 17px;
+        background: rgba(24, 214, 160, 0.055);
+      }
+
+      .challenge-panel h3 {
+        margin-bottom: 17px;
+        color: var(--verde);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .challenge-list {
+        display: grid;
+        gap: 13px;
+        list-style: none;
+      }
+
+      .challenge-list li {
+        display: flex;
+        gap: 11px;
+        color: #c9c9d3;
+        line-height: 1.5;
+      }
+
+      .challenge-list li::before {
+        content: '✓';
+        color: var(--verde);
+        font-weight: bold;
+      }
+
+      .formula-box {
+        margin-top: 20px;
+        padding: 17px;
+        border-radius: 12px;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.34);
+        text-align: center;
+      }
+
+      .formula-box span {
+        display: block;
+        margin-top: 8px;
+        color: var(--amarillo);
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+
+      /* =========================
+           CHATBOT
+        ========================== */
+
+      .chat-layout {
+        display: grid;
+        grid-template-columns: 310px minmax(0, 1fr);
+        gap: 22px;
+      }
+
+      .assistant-information {
+        padding: 25px;
+        border: 1px solid rgba(255, 47, 135, 0.3);
+        border-radius: 18px;
+        background: linear-gradient(
+          160deg,
+          rgba(255, 47, 135, 0.1),
+          rgba(255, 255, 255, 0.025)
+        );
+      }
+
+      .assistant-avatar {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 92px;
+        height: 92px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--rosa), #8e0e43);
+        box-shadow: 0 0 32px rgba(255, 47, 135, 0.28);
+        font-size: 2.5rem;
+      }
+
+      .assistant-avatar::after {
+        content: '';
+        position: absolute;
+        right: 3px;
+        bottom: 8px;
+        width: 17px;
+        height: 17px;
+        border: 3px solid var(--negro-suave);
+        border-radius: 50%;
+        background: var(--verde);
+      }
+
+      .assistant-information h3 {
+        margin-bottom: 12px;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .assistant-information p {
+        color: #bdbdca;
+        line-height: 1.65;
+      }
+
+      .assistant-information ul {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+        padding-left: 19px;
+        color: #d4d4dd;
+        line-height: 1.5;
+      }
+
+      .security-warning {
+        margin-top: 22px;
+        padding: 13px;
+        border: 1px solid rgba(255, 213, 74, 0.3);
+        border-radius: 10px;
+        color: #fff4b7;
+        background: rgba(255, 213, 74, 0.07);
+        font-size: 0.82rem;
+        line-height: 1.5;
+      }
+
+      .chat-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 590px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 18px;
+        background: #0c0c12;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.28);
+      }
+
+      .chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 17px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .chat-header-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .online-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--verde);
+        box-shadow: 0 0 10px var(--verde);
+      }
+
+      .clear-button {
+        padding: 8px 11px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px;
+        color: #c8c8d0;
+        background: transparent;
+        transition: 0.2s ease;
+      }
+
+      .clear-button:hover {
+        color: white;
+        border-color: var(--rosa);
+      }
+
+      .chat-messages {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 390px;
+        max-height: 490px;
+        padding: 21px;
+        overflow-y: auto;
+      }
+
+      .message {
+        max-width: 84%;
+        padding: 13px 15px;
+        border-radius: 14px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        animation: aparecerMensaje 0.25s ease;
+      }
+
+      @keyframes aparecerMensaje {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .bot-message {
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        color: #ededf5;
+        background: #252530;
+      }
+
+      .user-message {
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+        color: white;
+        background: linear-gradient(135deg, var(--rosa), #b51658);
+      }
+
+      .error-message {
+        align-self: flex-start;
+        border: 1px solid rgba(255, 77, 93, 0.4);
+        color: #ffd7dc;
+        background: rgba(255, 77, 93, 0.12);
+      }
+
+      .typing-message {
+        align-self: flex-start;
+        color: #bcbcc7;
+        background: #20202a;
+      }
+
+      .typing-dots {
+        display: inline-flex;
+        gap: 4px;
+      }
+
+      .typing-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--verde);
+        animation: escribir 1s infinite alternate;
+      }
+
+      .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes escribir {
+        to {
+          opacity: 0.25;
+          transform: translateY(-4px);
+        }
+      }
+
+      .suggestion-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 0 19px 13px;
+      }
+
+      .suggestion-button {
+        padding: 8px 11px;
+        border: 1px solid rgba(24, 214, 160, 0.32);
+        border-radius: 999px;
+        color: #b8ffea;
+        background: rgba(24, 214, 160, 0.06);
+        font-size: 0.78rem;
+        transition: 0.2s ease;
+      }
+
+      .suggestion-button:hover {
+        color: #06140f;
+        background: var(--verde);
+      }
+
+      .chat-form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        padding: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.09);
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .chat-input {
+        min-width: 0;
+        padding: 14px 15px;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 11px;
+        outline: none;
+        color: white;
+        background: #181821;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .chat-input:focus {
+        border-color: var(--verde);
+        box-shadow: 0 0 0 3px rgba(24, 214, 160, 0.09);
+      }
+
+      .send-button {
+        min-width: 105px;
+        padding: 12px 18px;
+        border: 0;
+        border-radius: 11px;
+        color: white;
+        background: linear-gradient(135deg, var(--verde), var(--verde-oscuro));
+        font-weight: bold;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+
+      .send-button:hover {
+        transform: translateY(-2px);
+      }
+
+      .send-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+        transform: none;
+      }
+
+      /* =========================
+           PIE DE PÁGINA
+        ========================== */
+
+      footer {
+        padding: 35px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: #8f8f9e;
+        background: rgba(0, 0, 0, 0.28);
+        text-align: center;
+        line-height: 1.7;
+      }
+
+      footer strong {
+        color: var(--rosa-claro);
+      }
+
+      /* =========================
+           RESPONSIVE
+        ========================== */
+
+      @media (max-width: 1000px) {
+        .game-layout,
+        .chat-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .challenge-panel {
+          order: -1;
+        }
+
+        .assistant-information {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 20px;
+          align-items: center;
+        }
+
+        .assistant-avatar {
+          margin: 0;
+        }
+
+        .assistant-information h3 {
+          text-align: left;
+        }
+
+        .assistant-information ul,
+        .security-warning {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 650px) {
+        .hero {
+          min-height: auto;
+          padding-top: 65px;
+        }
+
+        h1 {
+          letter-spacing: -2px;
+        }
+
+        .section {
+          padding: 24px 16px;
+          border-radius: 17px;
+        }
+
+        .section-heading {
+          align-items: flex-start;
+        }
+
+        .geogebra-container {
+          min-height: 480px;
+          padding: 8px;
+        }
+
+        .geogebra-container iframe {
+          min-height: 460px;
+        }
+
+        .assistant-information {
+          display: block;
+        }
+
+        .assistant-avatar {
+          margin: 0 auto 20px;
+        }
+
+        .assistant-information h3 {
+          text-align: center;
+        }
+
+        .chat-form {
+          grid-template-columns: 1fr;
+        }
+
+        .send-button {
+          width: 100%;
+        }
+
+        .message {
+          max-width: 92%;
+        }
+
+        .primary-button,
+        .secondary-button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="background-grid"></div>
+
+    <div class="glow glow-one"></div>
+    <div class="glow glow-two"></div>
+
+    <div class="floating-symbol floating-circle"></div>
+    <div class="floating-symbol floating-triangle"></div>
+    <div class="floating-symbol floating-square"></div>
+
+    <header class="hero">
+      <div class="hero-content">
+        <div class="round-label">
+          <span class="status-dot"></span>
+          Ronda matemática activa
+        </div>
+
+        <h1>
+          <span class="title-white">El puente</span>
+          <span class="title-pink">de las áreas</span>
+        </h1>
+
+        <p class="hero-description">
+          Diseña un puente capaz de llevar a los participantes desde un extremo
+          de la cuadrícula hasta el otro. Observa sus figuras, mide sus
+          dimensiones y calcula correctamente el área total construida.
+        </p>
+
+        <div class="hero-actions">
+          <a class="primary-button" href="#actividad"> Iniciar desafío </a>
+
+          <a class="secondary-button" href="#asistente">
+            Consultar al asistente
+          </a>
+        </div>
+
+        <div class="symbols-line" aria-hidden="true">
+          <div class="symbol circle-symbol"></div>
+          <div class="symbol triangle-symbol"></div>
+          <div class="symbol square-symbol"></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- REGLAS -->
+
+      <section class="section" id="reglas">
+        <div class="section-heading">
+          <div class="section-number">1</div>
+
+          <div>
+            <h2>Reglas del desafío</h2>
+            <p>
+              Lee las instrucciones antes de ingresar al área de construcción.
+            </p>
+          </div>
+        </div>
+
+        <div class="rules-grid">
+          <article class="rule-card">
+            <div class="rule-icon">01</div>
+
+            <h3>Observa la cuadrícula</h3>
+
+            <p>
+              Identifica las unidades de medida, las figuras disponibles y los
+              dos extremos que deberán conectarse.
+            </p>
+          </article>
+
+          <article class="rule-card">
+            <div class="rule-icon">02</div>
+
+            <h3>Diseña el puente</h3>
+
+            <p>
+              Combina cuadrados, rectángulos, triángulos u otras figuras para
+              crear un recorrido continuo y seguro.
+            </p>
+          </article>
+
+          <article class="rule-card">
+            <div class="rule-icon">03</div>
+
+            <h3>Divide las figuras</h3>
+
+            <p>
+              Cuando el puente tenga una forma irregular, sepáralo mentalmente
+              en figuras geométricas conocidas.
+            </p>
+          </article>
+
+          <article class="rule-card">
+            <div class="rule-icon">04</div>
+
+            <h3>Calcula el área</h3>
+
+            <p>
+              Obtén el área de cada parte y suma los resultados. Expresa la
+              respuesta en unidades cuadradas.
+            </p>
+          </article>
+        </div>
+
+        <div class="mission-box">
+          <strong>Misión:</strong>
+          construye un puente que atraviese toda la gráfica, calcula su área
+          total y explica qué procedimiento utilizaste. No basta con escribir
+          solamente el resultado.
+        </div>
+      </section>
+
+      <!-- GEOGEBRA -->
+
+      <section class="section" id="actividad">
+        <div class="section-heading">
+          <div class="section-number">2</div>
+
+          <div>
+            <h2>Zona de construcción</h2>
+            <p>Manipula la actividad y analiza cuidadosamente cada figura.</p>
+          </div>
+        </div>
+
+        <div class="game-layout">
+          <div class="geogebra-container">
+            <iframe
+              scrolling="no"
+              title="Area Fun Using a Grid"
+              src="https://www.geogebra.org/material/iframe/id/vvarvmda/width/800/height/500/border/888888/sfsb/true/smb/false/stb/false/stbh/false/ai/false/asb/false/sri/false/rc/false/ld/false/sdz/false/ctl/false"
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+          </div>
+
+          <aside class="challenge-panel">
+            <h3>Lista de control</h3>
+
+            <ul class="challenge-list">
+              <li>El puente conecta los dos extremos.</li>
+
+              <li>Las figuras no dejan espacios vacíos.</li>
+
+              <li>Identificaste la base y la altura.</li>
+
+              <li>Calculaste cada área por separado.</li>
+
+              <li>Sumaste correctamente los resultados.</li>
+
+              <li>Usaste unidades cuadradas.</li>
+            </ul>
+
+            <div class="formula-box">
+              Área del rectángulo
+              <span>A = b × h</span>
+            </div>
+
+            <div class="formula-box">
+              Área del triángulo
+              <span>A = (b × h) ÷ 2</span>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- CHATBOT -->
+
+      <section class="section" id="asistente">
+        <div class="section-heading">
+          <div class="section-number">3</div>
+
+          <div>
+            <h2>Asistente matemático</h2>
+            <p>
+              Solicita pistas y revisa tu procedimiento sin abandonar el
+              desafío.
+            </p>
+          </div>
+        </div>
+
+        <div class="chat-layout">
+          <aside class="assistant-information">
+            <div class="assistant-avatar">△</div>
+
+            <div>
+              <h3>Supervisor de áreas</h3>
+
+              <p>
+                El asistente puede orientarte para identificar figuras, aplicar
+                fórmulas y comprobar los pasos de tu solución.
+              </p>
+            </div>
+
+            <ul>
+              <li>Pide una pista gradual.</li>
+              <li>Escribe las medidas de tu figura.</li>
+              <li>Comparte tu procedimiento.</li>
+              <li>Solicita que revise tus cálculos.</li>
+            </ul>
+
+            <div class="security-warning">
+              Esta demostración llama directamente a Gemini desde el navegador.
+              No publiques una API key real dentro de este archivo.
+            </div>
+          </aside>
+
+          <div class="chat-card">
+            <div class="chat-header">
+              <div class="chat-header-title">
+                <span class="online-dot"></span>
+                <strong>Asistente disponible</strong>
+              </div>
+
+              <button class="clear-button" id="clearChatButton" type="button">
+                Limpiar
+              </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages" aria-live="polite">
+              <div class="message bot-message">
+                Hola, participante. Puedo ayudarte a calcular el área de tu
+                puente. Descríbeme las figuras que utilizaste y sus medidas.
+                Primero te daré una pista para que intentes resolverlo por tu
+                cuenta.
+              </div>
+            </div>
+
+            <div class="suggestion-buttons">
+              <button
+                class="suggestion-button"
+                type="button"
+                data-question="¿Cómo puedo dividir una figura irregular para calcular su área?"
+              >
+                Dividir una figura
+              </button>
+
+              <button
+                class="suggestion-button"
+                type="button"
+                data-question="Explícame la fórmula del área de un triángulo con un ejemplo sencillo."
+              >
+                Área del triángulo
+              </button>
+
+              <button
+                class="suggestion-button"
+                type="button"
+                data-question="Ayúdame a revisar mi procedimiento sin decirme directamente la respuesta."
+              >
+                Revisar procedimiento
+              </button>
+            </div>
+
+            <form class="chat-form" id="chatForm">
+              <input
+                class="chat-input"
+                id="chatInput"
+                type="text"
+                placeholder="Ejemplo: mi puente tiene dos rectángulos de 4 × 3..."
+                autocomplete="off"
+                maxlength="700"
+                required
+              />
+
+              <button class="send-button" id="sendButton" type="submit">
+                Enviar
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Actividad educativa:
+        <strong>El puente de las áreas</strong>
+      </p>
+
+      <p>Analiza, construye, calcula y justifica tu respuesta.</p>
+    </footer>
+
+    <script>
+      /*
+        ============================================================
+        CONFIGURACIÓN DE GEMINI
+        ============================================================
+
+        ADVERTENCIA:
+
+        1. La clave compartida anteriormente debe ser revocada.
+        2. Genera una clave nueva.
+        3. No publiques este HTML con la clave escrita aquí.
+        4. Para una actividad pública, utiliza un servidor o proxy.
+
+        Esta configuración directa sirve únicamente para pruebas
+        locales o privadas.
+        */
+
+      const GEMINI_API_KEY =
+        'AQ.Ab8RN6LuW9IEE0Dw39gTw7UvRHbvyK-uJLsbMLtExRrSgrp1jg';
+
+      /*
+        Modelo indicado en la documentación oficial consultada.
+        Podrás cambiarlo si tu cuenta utiliza otro modelo disponible.
+        */
+
+      const GEMINI_MODEL = 'gemini-3.6-flash';
+
+      const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+      const SYSTEM_INSTRUCTION = `
+Eres un tutor de matemáticas para estudiantes de educación secundaria.
+
+La actividad se llama "El puente de las áreas". Los estudiantes construyen
+o analizan un puente compuesto por figuras geométricas dentro de una
+cuadrícula y deben calcular su área total.
+
+Cumple estas reglas:
+
+1. Responde siempre en español claro y amigable.
+2. Ayuda principalmente con áreas de cuadrados, rectángulos, triángulos,
+   paralelogramos, trapecios y figuras compuestas.
+3. No entregues inmediatamente la respuesta final.
+4. Primero realiza una pregunta orientadora o proporciona una pista.
+5. Si el estudiante muestra su procedimiento, revísalo paso a paso.
+6. Señala errores con respeto y explica cómo corregirlos.
+7. Recuerda usar unidades cuadradas.
+8. Presenta operaciones de forma ordenada.
+9. No inventes medidas que el estudiante no haya proporcionado.
+10. Cuando falten datos, solicita exactamente las medidas necesarias.
+11. Evita temas ajenos a la actividad.
+12. Mantén respuestas breves, de máximo 180 palabras, salvo que el
+    estudiante solicite una explicación más detallada.
+        `.trim();
+
+      const chatForm = document.getElementById('chatForm');
+
+      const chatInput = document.getElementById('chatInput');
+
+      const chatMessages = document.getElementById('chatMessages');
+
+      const sendButton = document.getElementById('sendButton');
+
+      const clearChatButton = document.getElementById('clearChatButton');
+
+      const suggestionButtons = document.querySelectorAll('.suggestion-button');
+
+      /*
+        Historial compatible con la estructura contents[] de Gemini.
+        */
+
+      let conversationHistory = [];
+
+      function apiKeyIsConfigured() {
+        return GEMINI_API_KEY && GEMINI_API_KEY !== 'asdfsdaf';
+      }
+
+      function scrollChatToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function createMessage(text, type = 'bot') {
+        const message = document.createElement('div');
+
+        message.classList.add('message');
+
+        if (type === 'user') {
+          message.classList.add('user-message');
+        } else if (type === 'error') {
+          message.classList.add('error-message');
+        } else {
+          message.classList.add('bot-message');
+        }
+
+        /*
+            textContent evita que una respuesta introduzca HTML
+            ejecutable dentro de la página.
+            */
+
+        message.textContent = text;
+
+        chatMessages.appendChild(message);
+
+        scrollChatToBottom();
+
+        return message;
+      }
+
+      function showTypingIndicator() {
+        const indicator = document.createElement('div');
+
+        indicator.className = 'message typing-message';
+
+        indicator.id = 'typingIndicator';
+
+        indicator.innerHTML = `
+                Analizando el puente
+                <span class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            `;
+
+        chatMessages.appendChild(indicator);
+
+        scrollChatToBottom();
+      }
+
+      function removeTypingIndicator() {
+        const indicator = document.getElementById('typingIndicator');
+
+        if (indicator) {
+          indicator.remove();
+        }
+      }
+
+      function setLoading(isLoading) {
+        sendButton.disabled = isLoading;
+        chatInput.disabled = isLoading;
+
+        sendButton.textContent = isLoading ? 'Pensando...' : 'Enviar';
+      }
+
+      function extractResponseText(data) {
+        const parts = data?.candidates?.[0]?.content?.parts;
+
+        if (!Array.isArray(parts)) {
+          return '';
+        }
+
+        return parts
+          .map((part) => part.text || '')
+          .join('')
+          .trim();
+      }
+
+      async function askGemini(userMessage) {
+        if (!apiKeyIsConfigured()) {
+          throw new Error('API_KEY_NOT_CONFIGURED');
+        }
+
+        const pendingHistory = [
+          ...conversationHistory,
+          {
+            role: 'user',
+            parts: [
+              {
+                text: userMessage,
+              },
+            ],
+          },
+        ];
+
+        const response = await fetch(GEMINI_ENDPOINT, {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'application/json',
+
+            'x-goog-api-key': GEMINI_API_KEY,
+          },
+
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [
+                {
+                  text: SYSTEM_INSTRUCTION,
+                },
+              ],
+            },
+
+            contents: pendingHistory,
+
+            generationConfig: {
+              temperature: 0.45,
+              topP: 0.9,
+              maxOutputTokens: 1000,
+            },
+          }),
+        });
+
+        let responseData;
+
+        try {
+          responseData = await response.json();
+        } catch (error) {
+          throw new Error(
+            'La API devolvió una respuesta que no pudo interpretarse.'
+          );
+        }
+
+        if (!response.ok) {
+          const apiMessage = responseData?.error?.message;
+
+          throw new Error(
+            apiMessage || `La solicitud falló con el código ${response.status}.`
+          );
+        }
+
+        const assistantText = extractResponseText(responseData);
+
+        if (!assistantText) {
+          throw new Error(
+            'El asistente no devolvió texto. Intenta formular nuevamente la pregunta.'
+          );
+        }
+
+        conversationHistory = pendingHistory;
+
+        conversationHistory.push({
+          role: 'model',
+          parts: [
+            {
+              text: assistantText,
+            },
+          ],
+        });
+
+        /*
+            Limita el historial para evitar enviar una conversación
+            excesivamente extensa en cada solicitud.
+            */
+
+        if (conversationHistory.length > 16) {
+          conversationHistory = conversationHistory.slice(-16);
+        }
+
+        return assistantText;
+      }
+
+      async function sendMessage(predefinedMessage = '') {
+        const userMessage = (predefinedMessage || chatInput.value).trim();
+
+        if (!userMessage) {
+          return;
+        }
+
+        createMessage(userMessage, 'user');
+
+        chatInput.value = '';
+
+        setLoading(true);
+        showTypingIndicator();
+
+        try {
+          const answer = await askGemini(userMessage);
+
+          removeTypingIndicator();
+
+          createMessage(answer, 'bot');
+        } catch (error) {
+          removeTypingIndicator();
+
+          if (error.message === 'API_KEY_NOT_CONFIGURED') {
+            createMessage(
+              'El chatbot todavía no tiene configurada una clave de Gemini. Genera una clave nueva y colócala en la constante GEMINI_API_KEY únicamente para una prueba privada.',
+              'error'
+            );
+          } else {
+            console.error(error);
+
+            createMessage(
+              `No pude conectarme con el asistente. ${error.message}`,
+              'error'
+            );
+          }
+        } finally {
+          setLoading(false);
+          chatInput.focus();
+        }
+      }
+
+      chatForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await sendMessage();
+      });
+
+      suggestionButtons.forEach((button) => {
+        button.addEventListener('click', async () => {
+          const question = button.dataset.question;
+
+          await sendMessage(question);
+        });
+      });
+
+      clearChatButton.addEventListener('click', () => {
+        conversationHistory = [];
+
+        chatMessages.innerHTML = '';
+
+        createMessage(
+          'La conversación fue reiniciada. Describe las figuras y medidas de tu puente para comenzar.',
+          'bot'
+        );
+
+        chatInput.focus();
+      });
+    </script>
+  </body>
+</html>
